@@ -1,36 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# HSA — Admin Portal
 
-## Getting Started
+Admin dashboard built with **Next.js 16**, **MUI v7**, **Zustand v5**, and **NextAuth.js v4**.  
+Data source: [DummyJSON API](https://dummyjson.com/)
 
-First, run the development server:
+## Setup
+
+```bash
+git clone https://github.com/Karam-999/hsa-admin.git
+cd hsa-assignment
+npm install
+```
+
+Create `.env`:
+
+```
+NEXTAUTH_SECRET=generateSECRETusing: node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+NEXTAUTH_URL=http://localhost:3000
+```
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Login: `emilys` / `emilyspass`
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## Features
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Auth** — NextAuth + Zustand with `persist` middleware (localStorage), protected routes
+- **Users** — Paginated table, search by name, detail view with contact & company info
+- **Products** — Paginated grid, search, category filter, detail view with image carousel
+- **Caching** — Key-based in-memory cache with 5-min TTL in Zustand stores; revisited pages load instantly
+- **Performance** — `React.memo` on all reusable components, `useCallback`/`useMemo`, debounced search (400ms), API-side pagination (`limit`/`skip`)
 
-## Learn More
+## Project Structure
 
-To learn more about Next.js, take a look at the following resources:
+```
+src/
+├── app/
+│   ├── api/auth/[...nextauth]/route.js  # NextAuth credentials provider
+│   ├── dashboard/page.js                # Stats overview
+│   ├── login/page.js                    # Login form
+│   ├── products/page.js & [id]/page.js  # Product list + detail
+│   ├── users/page.js & [id]/page.js     # User list + detail
+│   ├── Muisetup.js                      # ThemeProvider + SessionProvider
+│   └── layout.js
+├── components/                          # Navbar, ProductCard, UserTable, SearchBar, Loader, ProtectedRoute
+├── store/                               # authStore, userStore, productStore (Zustand)
+├── services/api.js                      # Shared fetch helpers
+└── utils/constants.js                   # API URL, limits, cache TTL
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Why Zustand?
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Zero boilerplate — state + actions in a single `create()` call
+- Async actions work natively with `async/await` (no thunk/saga)
+- `persist` middleware syncs auth to localStorage automatically
+- ~1 KB gzipped, no `<Provider>` wrapper needed
